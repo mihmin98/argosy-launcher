@@ -15,6 +15,7 @@ jetbrainsNavigation = "2.8.0-alpha12"
 coil3 = "3.0.4"
 jamepad = "2.30.0.0"
 vorbisspi = "1.0.3.3"
+tomlj = "1.1.1"
 
 [libraries]
 # Compose Multiplatform companions
@@ -44,6 +45,9 @@ coil-svg = { group = "io.coil-kt.coil3", name = "coil-svg", version.ref = "coil3
 jamepad = { group = "com.badlogicgames.jamepad", name = "jamepad", version.ref = "jamepad" }
 vorbisspi = { group = "com.googlecode.soundlibs", name = "vorbisspi", version.ref = "vorbisspi" }
 jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
+
+# Build logic
+tomlj = { group = "org.tomlj", name = "tomlj", version.ref = "tomlj" }
 
 # JVM stand-ins for libraries Android bundles or app/ declares inline
 json = { group = "org.json", name = "json", version.ref = "json" }
