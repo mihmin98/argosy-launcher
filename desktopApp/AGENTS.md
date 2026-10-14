@@ -16,7 +16,7 @@ at the repo root. Read the progress file before resuming any step.
 - `app/` is never edited in the fork: not a source file, not a resource, not a
   build script. Desktop code lives in `desktopApp/`, `scripts/desktop/`,
   `.github/workflows/desktop*.yml` and `gradle/desktop.versions.toml`.
-  CI enforces this with `git diff --exit-code upstream/main -- app/`.
+  CI enforces this with `git diff --exit-code $(git merge-base HEAD origin/main) HEAD -- app/`.
 - Shared root files: only `settings.gradle.kts` (the `:desktopApp` include and the
   `desktopLibs` catalog registration) and `.gitignore` may change.
   `build.gradle.kts` and `gradle/libs.versions.toml` stay as upstream has them.
