@@ -11,7 +11,7 @@ apply(from = "overlay.gradle.kts")
 
 @Suppress("UNCHECKED_CAST")
 val isExcludedUpstream = extra["overlay.isExcluded"] as (String) -> Boolean
-val upstreamRoot = rootProject.file("app/src/main/kotlin")
+val upstreamRoot = extra["overlay.upstreamRoot"] as File
 
 kotlin {
     jvmToolchain(21)

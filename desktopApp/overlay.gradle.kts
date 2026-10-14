@@ -46,4 +46,30 @@ val isExcluded: (String) -> Boolean = { path ->
     }
 }
 
+val upstreamRoot = rootProject.file("app/src/main/kotlin")
+
 extra["overlay.isExcluded"] = isExcluded
+extra["overlay.upstreamRoot"] = upstreamRoot
+
+tasks.register("overlayReport") {
+    group = "desktop"
+    description = "Counts the upstream Kotlin files the desktop overlay compiles and excludes."
+    doLast {
+        val sources = upstreamRoot.walkTopDown()
+            .filter { it.isFile && it.extension == "kt" }
+            .map { it.relativeTo(upstreamRoot).invariantSeparatorsPath }
+            .toList()
+        val excluded = sources.filter(isExcluded)
+        println("upstream .kt files: ${sources.size}")
+        println("compiled:           ${sources.size - excluded.size}")
+        println("excluded:           ${excluded.size}")
+        val unmatched = excludedDirs.filter { dir -> sources.none { it.startsWith("$dir/") } } +
+            (excludedFiles + includedBack).filter { it !in sources }
+        if (unmatched.isEmpty()) {
+            println("every overlay entry matches upstream")
+        } else {
+            println("entries matching no upstream file:")
+            unmatched.forEach { println("  $it") }
+        }
+    }
+}
