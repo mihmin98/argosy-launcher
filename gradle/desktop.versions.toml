@@ -1,0 +1,53 @@
+[versions]
+# Mirrors of upstream versions not reachable through libs
+dagger = "2.54"
+datastore = "1.1.1"
+sqlite = "2.5.0"
+coroutines = "1.9.0"
+jna = "5.14.0"
+json = "20240303"
+zxing = "3.5.3"
+
+# Desktop only
+composeMultiplatform = "1.7.3"
+jetbrainsLifecycle = "2.8.4"
+jetbrainsNavigation = "2.8.0-alpha12"
+coil3 = "3.0.4"
+jamepad = "2.30.0.0"
+vorbisspi = "1.0.3.3"
+
+[libraries]
+# Compose Multiplatform companions
+jetbrains-lifecycle-viewmodel-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "jetbrainsLifecycle" }
+jetbrains-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "jetbrainsLifecycle" }
+jetbrains-navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref = "jetbrainsNavigation" }
+
+# Persistence
+sqlite-bundled = { group = "androidx.sqlite", name = "sqlite-bundled", version.ref = "sqlite" }
+datastore-preferences-core = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "datastore" }
+
+# DI
+dagger = { group = "com.google.dagger", name = "dagger", version.ref = "dagger" }
+dagger-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "dagger" }
+hilt-core = { group = "com.google.dagger", name = "hilt-core", version.ref = "dagger" }
+
+# Coroutines
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "coroutines" }
+
+# Image loading
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil3" }
+coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil3" }
+coil-svg = { group = "io.coil-kt.coil3", name = "coil-svg", version.ref = "coil3" }
+
+# Input, audio, native
+jamepad = { group = "com.badlogicgames.jamepad", name = "jamepad", version.ref = "jamepad" }
+vorbisspi = { group = "com.googlecode.soundlibs", name = "vorbisspi", version.ref = "vorbisspi" }
+jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
+
+# JVM stand-ins for libraries Android bundles or app/ declares inline
+json = { group = "org.json", name = "json", version.ref = "json" }
+zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
+
+[plugins]
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
