@@ -1,6 +1,7 @@
 import re
 import sys
 from pathlib import Path
+from typing import NoReturn
 
 IMPORT_REWRITES = {
     "import androidx.room.migration.Migration": "import com.nendo.argosy.desktop.db.LegacyMigration",
@@ -10,7 +11,7 @@ HEADER = re.compile(r"^object Migration_(\d+)_(\d+) : Migration\((\d+), (\d+)\) 
 MIGRATE = "    override fun migrate(db: SupportSQLiteDatabase) {"
 
 
-def fail(source, line_no, message):
+def fail(source, line_no, message) -> NoReturn:
     sys.exit(f"gen-migrations: {source}:{line_no}: {message}")
 
 

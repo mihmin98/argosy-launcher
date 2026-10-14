@@ -29,13 +29,32 @@ val generateDesktopMigrations by tasks.registering(Exec::class) {
     )
 }
 
+val generateDesktopDaoModule by tasks.registering(Exec::class) {
+    val source = File(upstreamRoot, "com/nendo/argosy/data/local/ALauncherDatabase.kt")
+    val script = rootProject.file("scripts/desktop/gen-dao-module.py")
+    val outputDir = layout.buildDirectory.dir("generated/desktop/daomodule")
+    inputs.files(source, script)
+    outputs.dir(outputDir)
+    commandLine(
+        "python3", script.path, source.path,
+        outputDir.get().file("com/nendo/argosy/desktop/di/DesktopDaoModule.kt").asFile.path,
+    )
+}
+
+val overlayExclusion = Spec<FileTreeElement> { element ->
+    element.file.startsWith(upstreamRoot) && isExcludedUpstream(element.relativePath.pathString)
+}
+
 sourceSets.main {
     kotlin.srcDir(upstreamRoot)
     kotlin.srcDir("src/main/kotlin")
     kotlin.srcDir(generateDesktopMigrations)
-    kotlin.exclude { element ->
-        element.file.startsWith(upstreamRoot) && isExcludedUpstream(element.relativePath.pathString)
-    }
+    kotlin.srcDir(generateDesktopDaoModule)
+    kotlin.exclude(overlayExclusion)
+}
+
+tasks.matching { it.name.startsWith("ksp") && it is PatternFilterable }.configureEach {
+    (this as PatternFilterable).exclude(overlayExclusion)
 }
 
 composeCompiler {
@@ -54,6 +73,7 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(desktopLibs.sqlite.bundled)
     implementation(desktopLibs.kotlinx.coroutines.core)
+    implementation(desktopLibs.dagger)
 
     testImplementation(libs.junit)
     testImplementation(desktopLibs.json)
@@ -61,6 +81,7 @@ dependencies {
     ksp(libs.room.compiler)
     ksp(libs.moshi.kotlin)
     ksp(desktopLibs.dagger.compiler)
+    kspTest(desktopLibs.dagger.compiler)
 }
 
 val roomSchemaDir = "com.nendo.argosy.data.local.ALauncherDatabase"
