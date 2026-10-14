@@ -62,6 +62,7 @@ dirs = [
 ]
 files = [
   "com/nendo/argosy/data/local/ALauncherDatabase.kt",
+  "com/nendo/argosy/data/local/migrations/MigrationRegistry.kt",
   "com/nendo/argosy/data/platform/PlatformDefinitions.kt",
   "com/nendo/argosy/util/SearchNormalizer.kt",
 ]
