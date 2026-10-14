@@ -32,6 +32,7 @@ files = [
   "com/nendo/argosy/DualScreenManagerHolder.kt",
   "com/nendo/argosy/di/AppModule.kt",
   "com/nendo/argosy/di/DatabaseModule.kt",
+  "com/nendo/argosy/data/local/DatabaseFactory.kt",
   "com/nendo/argosy/data/local/migrations/Migrations.kt",
   "com/nendo/argosy/data/preferences/DataStoreFactory.kt",
   "com/nendo/argosy/data/social/ArgosSocialService.kt",
@@ -50,4 +51,17 @@ files = [
 [include_back]
 files = [
   "com/nendo/argosy/libretro/LibretroCoreRegistry.kt",
+]
+
+[only]
+dirs = [
+  "com/nendo/argosy/data/local/converter",
+  "com/nendo/argosy/data/local/dao",
+  "com/nendo/argosy/data/local/entity",
+  "com/nendo/argosy/data/model",
+]
+files = [
+  "com/nendo/argosy/data/local/ALauncherDatabase.kt",
+  "com/nendo/argosy/data/platform/PlatformDefinitions.kt",
+  "com/nendo/argosy/util/SearchNormalizer.kt",
 ]

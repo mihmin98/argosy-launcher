@@ -36,9 +36,18 @@ val replacedFiles = shadows?.getArray("shadow")?.let { entries ->
     (0 until entries.size()).map { entries.getTable(it).getString("upstream")!! }
 }.orEmpty()
 val excludedFiles = (manifest?.getArray("exclude.files").strings().orEmpty() + replacedFiles).toSet()
+val onlyDirs = manifest?.getArray("only.dirs").strings().toSet()
+val onlyFiles = manifest?.getArray("only.files").strings().toSet()
+val narrowed = onlyDirs.isNotEmpty() || onlyFiles.isNotEmpty()
+
+fun outsideOnly(path: String): Boolean = narrowed &&
+    path !in onlyFiles &&
+    onlyDirs.none { path == it || path.startsWith("$it/") } &&
+    (onlyDirs + onlyFiles).none { it.startsWith("$path/") }
 
 val isExcluded: (String) -> Boolean = { path ->
     when {
+        outsideOnly(path) -> true
         path in includedBack -> false
         includedBack.any { it.startsWith("$path/") } -> false
         path in excludedFiles -> true
@@ -63,8 +72,9 @@ tasks.register("overlayReport") {
         println("upstream .kt files: ${sources.size}")
         println("compiled:           ${sources.size - excluded.size}")
         println("excluded:           ${excluded.size}")
-        val unmatched = excludedDirs.filter { dir -> sources.none { it.startsWith("$dir/") } } +
-            (excludedFiles + includedBack).filter { it !in sources }
+        if (narrowed) println("narrowed by [only]: ${onlyDirs.size} dirs, ${onlyFiles.size} files")
+        val unmatched = (excludedDirs + onlyDirs).filter { dir -> sources.none { it.startsWith("$dir/") } } +
+            (excludedFiles + includedBack + onlyFiles).filter { it !in sources }
         if (unmatched.isEmpty()) {
             println("every overlay entry matches upstream")
         } else {

@@ -33,10 +33,30 @@ composeCompiler {
     featureFlags.add(ComposeFeatureFlag.IntrinsicRemember.disabled())
 }
 
+ksp {
+    arg("room.schemaLocation", layout.buildDirectory.dir("room-schemas").get().asFile.path)
+}
+
 dependencies {
+    implementation(compose.runtime)
+    implementation(libs.room.runtime)
+    implementation(desktopLibs.sqlite.bundled)
+    implementation(desktopLibs.kotlinx.coroutines.core)
+
+    testImplementation(libs.junit)
+
     ksp(libs.room.compiler)
     ksp(libs.moshi.kotlin)
     ksp(desktopLibs.dagger.compiler)
+}
+
+val roomSchemaDir = "com.nendo.argosy.data.local.ALauncherDatabase"
+
+tasks.test {
+    val upstreamSchemas = rootProject.file("app/schemas/$roomSchemaDir")
+    inputs.dir(upstreamSchemas)
+    systemProperty("argosy.upstreamSchemas", upstreamSchemas.path)
+    systemProperty("argosy.desktopSchemas", layout.buildDirectory.dir("room-schemas/$roomSchemaDir").get().asFile.path)
 }
 
 compose.desktop {
