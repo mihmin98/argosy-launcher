@@ -148,6 +148,20 @@ tasks.check {
     dependsOn(sigilTest)
 }
 
+val mpvSpikeSourceSet = sourceSets.create("mpvSpike") {
+    kotlin.srcDir("spikes/mpv/src/main/kotlin")
+}
+
+val runMpvSpike by tasks.registering(JavaExec::class) {
+    description = "Runs the P0-10 libmpv render spike (throwaway, not shipped)."
+    group = "desktop spikes"
+    classpath = mpvSpikeSourceSet.runtimeClasspath
+    mainClass = "com.nendo.argosy.desktop.spike.mpv.MainKt"
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+    workingDir = layout.buildDirectory.dir("mpv-spike").get().asFile
+    doFirst { workingDir.mkdirs() }
+}
+
 composeCompiler {
     stabilityConfigurationFiles.add(
         rootProject.layout.projectDirectory.file("app/compose_stability_config.conf")
@@ -175,6 +189,10 @@ dependencies {
 
     testImplementation(libs.junit)
     "sigilTestImplementation"(libs.junit)
+    "mpvSpikeImplementation"(compose.desktop.currentOs)
+    "mpvSpikeImplementation"(compose.foundation)
+    "mpvSpikeImplementation"(desktopLibs.kotlinx.coroutines.swing)
+    "mpvSpikeImplementation"(desktopLibs.jna)
     testImplementation(desktopLibs.json)
     testImplementation(compose.desktop.currentOs)
     testImplementation(desktopLibs.jetbrains.lifecycle.runtime.compose)
