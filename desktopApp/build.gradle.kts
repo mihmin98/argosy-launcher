@@ -75,7 +75,30 @@ val generateDesktopResources by tasks.registering(Exec::class) {
     )
 }
 
+val sigilBinding = rootProject.file("sigil/bindings/android")
+val nativeDir = layout.buildDirectory.dir("native")
+
+val buildSigilNative by tasks.registering(Exec::class) {
+    val script = file("native/build-sigil.sh")
+    val sigil = rootProject.file("sigil")
+    inputs.files(
+        fileTree(sigil) { include("CMakeLists.txt", "src/**", "include/**", "third_party/**", "bindings/android/src/main/cpp/**") },
+        script,
+    )
+    outputs.dir(nativeDir)
+    val javaHome = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+        .map { it.metadata.installationPath.asFile.path }
+    doFirst {
+        if (org.gradle.internal.os.OperatingSystem.current().isWindows) {
+            throw GradleException("desktop: the Windows sigil build (build-sigil.ps1) arrives with P6-00")
+        }
+        environment("JAVA_HOME", javaHome.get())
+    }
+    commandLine("bash", script.path, nativeDir.get().asFile.path)
+}
+
 sourceSets.main {
+    kotlin.srcDir(sigilBinding.resolve("src/main/kotlin"))
     resources.srcDir(files(generatedResources.map { it.dir("resources") }).builtBy(generateDesktopResources))
     kotlin.srcDir(files(generatedResources.map { it.dir("kotlin") }).builtBy(generateDesktopResources))
     kotlin.srcDir(upstreamRoot)
@@ -95,6 +118,34 @@ tasks.processResources {
 
 tasks.matching { it.name.startsWith("ksp") && it is PatternFilterable }.configureEach {
     (this as PatternFilterable).exclude(overlayExclusion)
+}
+
+val sigilTestSourceSet = sourceSets.create("sigilTest") {
+    kotlin.srcDir(sigilBinding.resolve("src/test/kotlin"))
+    compileClasspath += sourceSets.main.get().output
+    runtimeClasspath += sourceSets.main.get().output
+}
+
+configurations.named("sigilTestImplementation") {
+    extendsFrom(configurations.implementation.get())
+}
+
+val sigilTest by tasks.registering(Test::class) {
+    description = "Runs sigil's Kotlin binding tests against the host JNI library."
+    group = "verification"
+    testClassesDirs = sigilTestSourceSet.output.classesDirs
+    classpath = sigilTestSourceSet.runtimeClasspath
+    dependsOn(buildSigilNative)
+    workingDir = sigilBinding
+    val natives = nativeDir.map { dir -> dir.asFile.resolve("natives").listFiles()?.single()?.path.orEmpty() }
+    doFirst {
+        systemProperty("java.library.path", natives.get())
+    }
+    systemProperty("sigil.requireHostJni", "true")
+}
+
+tasks.check {
+    dependsOn(sigilTest)
 }
 
 composeCompiler {
@@ -123,6 +174,7 @@ dependencies {
     implementation(desktopLibs.icu4j)
 
     testImplementation(libs.junit)
+    "sigilTestImplementation"(libs.junit)
     testImplementation(desktopLibs.json)
     testImplementation(compose.desktop.currentOs)
     testImplementation(desktopLibs.jetbrains.lifecycle.runtime.compose)
