@@ -26,6 +26,12 @@ A member is added here in the same change that adds it to the stub.
 | T1 | `dagger.hilt.android.lifecycle.HiltViewModel` | annotation | marker read by `scripts/desktop/gen-vm-module.py` | 33 upstream view models (1 compiled: `LaunchOverlayViewModel`) | P0-07 |
 | T1 | `dagger.hilt.android.EntryPointAccessors` | `fromApplication(Context, Class)` | casts the application context's `DesktopComponentOwner.component`; `IllegalStateException` when the context holds no component or the component lacks the entry point | 4 upstream sites (0 compiled) | P0-07 |
 | T1 | `androidx.hilt.navigation.compose` | `hiltViewModel(viewModelStoreOwner, key)` | `viewModel(factory = LocalDesktopViewModelFactory.current)`: one `DesktopViewModelComponent` per view model, handle from the owner's creation extras | 31 upstream calls, all no-argument (0 compiled) | P0-07 |
+| T1 | `android.content.Context` | `getResources()` | abstract; desktop context returns a `DesktopResources` | `LocalContext.current.resources` in the Compose stubs; 27 upstream `.resources.getQuantityString` sites (0 compiled) | P0-08 |
+| T1 | `android.content.Context` | `getString(int)`, `getString(int, Object...)` | final, delegating to `getResources()` exactly as Android's | 740 upstream `getString(` calls (0 compiled) | P0-08 |
+| T1 | `android.content.res.Resources` | `getString(id)`, `getString(id, args)`, `getQuantityString(id, quantity)`, `getQuantityString(id, quantity, args)` | abstract; `DesktopResources` serves them from `StringTable`, formatting with `String.format(locale, …)` only when arguments are passed; unknown ids throw `IllegalArgumentException` (no upstream site catches `NotFoundException`) | Compose string stubs; `Context.getString` | P0-08 |
+| T1 | `androidx.compose.ui.platform` | `LocalContext` | `staticCompositionLocalOf<Context>`, failing with Android's message when absent | 100 upstream importing files (0 compiled) | P0-08 |
+| T1 | `androidx.compose.ui.res` | `stringResource(id)`, `stringResource(id, vararg)`, `pluralStringResource(id, count)`, `pluralStringResource(id, count, vararg)` | `LocalContext.current.resources`, as Android's. Does not read `LocalConfiguration` yet (P2-03) | 269 / 70 upstream importing files (0 compiled) | P0-08 |
+| T1 | `androidx.compose.ui.res` | `painterResource(id: Int)` | vector XML from `argosy/res/drawable` through CMP's `loadXmlImageVector`; non-vector XML fails, as Android's `painterResource` refuses it | 9 upstream importing files; every one of the 28 `R.drawable` names upstream references loads (test) | P0-08 |
 
 T1 stubs of Java APIs are written in Java (`desktopApp/src/main/java`), so upstream Kotlin
 keeps its property syntax over Java getters (`context.filesDir`) and explicit getter calls
@@ -41,3 +47,6 @@ P0-07 (2026-10-16): `LaunchOverlayViewModel`'s closure (17 more files) needed th
 and haptics stubs above. `HapticPattern` lives in `ui/input/HapticFeedback.kt`, which
 `InputHandler` (every screen) references, so the haptics manager compiles here; with no
 vibrator service it is inert until P2-08.
+
+P0-08 (2026-10-16): `com.nendo.argosy.R` is generated (`gen-r.py`), not a stub. Raw
+resources are on the classpath under `argosy/res/raw`; nothing reads them until P2-08.

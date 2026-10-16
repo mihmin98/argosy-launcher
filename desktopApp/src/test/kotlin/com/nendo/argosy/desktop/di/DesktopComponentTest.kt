@@ -1,6 +1,7 @@
 package com.nendo.argosy.desktop.di
 
 import android.content.Context
+import android.content.res.Resources
 import androidx.lifecycle.SavedStateHandle
 import com.nendo.argosy.data.repository.DocumentHighlight
 import com.nendo.argosy.data.repository.DocumentHighlightStore
@@ -41,6 +42,7 @@ class DesktopComponentTest {
         override fun getApplicationContext(): Context = this
         override fun getFilesDir(): File = filesDir
         override fun <T> getSystemService(serviceClass: Class<T>): T? = null
+        override fun getResources(): Resources = throw UnsupportedOperationException()
     }
 
     private lateinit var root: File

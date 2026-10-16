@@ -1,6 +1,7 @@
 package com.nendo.argosy.desktop.di
 
 import android.content.Context
+import android.content.res.Resources
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.runComposeUiTest
@@ -91,6 +92,7 @@ class DesktopViewModelTest {
         override fun getApplicationContext(): Context = this
         override fun getFilesDir(): File = throw UnsupportedOperationException()
         override fun <T> getSystemService(serviceClass: Class<T>): T? = null
+        override fun getResources(): Resources = throw UnsupportedOperationException()
     }
 
     private class EntryOwner(args: Bundle? = null) :
@@ -186,6 +188,7 @@ class DesktopViewModelTest {
             override fun getApplicationContext(): Context = this
             override fun getFilesDir(): File = throw UnsupportedOperationException()
             override fun <T> getSystemService(serviceClass: Class<T>): T? = null
+            override fun getResources(): Resources = throw UnsupportedOperationException()
         }
 
         assertThrows(IllegalStateException::class.java) {

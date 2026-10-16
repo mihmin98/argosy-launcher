@@ -61,13 +61,36 @@ val generateDesktopViewModelModule by tasks.registering(Exec::class) {
     commandLine("python3", script.path, listing.path, outputDir.get().asFile.path)
 }
 
+val upstreamRes = rootProject.file("app/src/main/res")
+val generatedResources = layout.buildDirectory.dir("generated/desktop/res")
+
+val generateDesktopResources by tasks.registering(Exec::class) {
+    val script = rootProject.file("scripts/desktop/gen-r.py")
+    inputs.files(fileTree(upstreamRes) { include("values*/**", "drawable*/**", "raw*/**") }, script)
+    outputs.dir(generatedResources)
+    commandLine(
+        "python3", script.path, upstreamRes.path,
+        generatedResources.get().dir("kotlin").asFile.path,
+        generatedResources.get().dir("resources").asFile.path,
+    )
+}
+
 sourceSets.main {
+    resources.srcDir(files(generatedResources.map { it.dir("resources") }).builtBy(generateDesktopResources))
+    kotlin.srcDir(files(generatedResources.map { it.dir("kotlin") }).builtBy(generateDesktopResources))
     kotlin.srcDir(upstreamRoot)
     kotlin.srcDir("src/main/kotlin")
     kotlin.srcDir(generateDesktopMigrations)
     kotlin.srcDir(generateDesktopDaoModule)
     kotlin.srcDir(generateDesktopViewModelModule)
     kotlin.exclude(overlayExclusion)
+}
+
+tasks.processResources {
+    from(upstreamRes) {
+        include("drawable/*.xml", "raw/*")
+        into("argosy/res")
+    }
 }
 
 tasks.matching { it.name.startsWith("ksp") && it is PatternFilterable }.configureEach {
@@ -87,6 +110,7 @@ ksp {
 
 dependencies {
     implementation(compose.runtime)
+    implementation(compose.ui)
     implementation(libs.room.runtime)
     implementation(desktopLibs.sqlite.bundled)
     implementation(desktopLibs.kotlinx.coroutines.core)
@@ -96,6 +120,7 @@ dependencies {
     implementation(desktopLibs.hilt.core)
     implementation(desktopLibs.jetbrains.lifecycle.viewmodel.compose)
     implementation(desktopLibs.jetbrains.lifecycle.viewmodel.savedstate)
+    implementation(desktopLibs.icu4j)
 
     testImplementation(libs.junit)
     testImplementation(desktopLibs.json)
@@ -117,6 +142,7 @@ tasks.test {
     inputs.dir(rootProject.file("app/schemas"))
     systemProperty("argosy.upstreamSchemas", upstreamSchemas.path)
     systemProperty("argosy.schemaRoot", rootProject.file("app/schemas").path)
+    systemProperty("argosy.upstreamRoot", upstreamRoot.path)
     systemProperty("argosy.desktopSchemas", layout.buildDirectory.dir("room-schemas/$roomSchemaDir").get().asFile.path)
 }
 
