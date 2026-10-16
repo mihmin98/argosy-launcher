@@ -1,9 +1,11 @@
 package com.nendo.argosy.desktop.di
 
 import android.content.Context
+import androidx.lifecycle.SavedStateHandle
 import com.nendo.argosy.data.repository.DocumentHighlight
 import com.nendo.argosy.data.repository.DocumentHighlightStore
 import com.nendo.argosy.desktop.platform.AppDirs
+import com.nendo.argosy.ui.components.LaunchOverlayViewModel
 import dagger.BindsInstance
 import dagger.Component
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -36,7 +38,9 @@ class DesktopComponentTest {
     }
 
     private class FilesDirContext(private val filesDir: File) : Context() {
+        override fun getApplicationContext(): Context = this
         override fun getFilesDir(): File = filesDir
+        override fun <T> getSystemService(serviceClass: Class<T>): T? = null
     }
 
     private lateinit var root: File
@@ -67,6 +71,15 @@ class DesktopComponentTest {
 
         assertNull(component.gameDao().getById(1L))
         assertTrue(appDirs.db("alauncher.db").isFile)
+    }
+
+    @Test
+    fun `desktop component binds every compiled hilt view model`() {
+        val component = DaggerDesktopComponent.factory().create(context, appDirs)
+
+        val viewModels = component.viewModelComponentFactory().create(SavedStateHandle()).viewModels()
+
+        assertEquals(setOf(LaunchOverlayViewModel::class.java), viewModels.keys)
     }
 
     @Test

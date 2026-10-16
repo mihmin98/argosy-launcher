@@ -45,11 +45,28 @@ val overlayExclusion = Spec<FileTreeElement> { element ->
     element.file.startsWith(upstreamRoot) && isExcludedUpstream(element.relativePath.pathString)
 }
 
+val generateDesktopViewModelModule by tasks.registering(Exec::class) {
+    val sources = files(
+        fileTree(upstreamRoot) { include("**/*.kt"); exclude(overlayExclusion) },
+        fileTree("src/main/kotlin") { include("**/*.kt") },
+    )
+    val script = rootProject.file("scripts/desktop/gen-vm-module.py")
+    val listing = temporaryDir.resolve("sources.txt")
+    val outputDir = layout.buildDirectory.dir("generated/desktop/vmmodule")
+    inputs.files(sources, script)
+    outputs.dir(outputDir)
+    doFirst {
+        listing.writeText(sources.files.sorted().joinToString("\n", postfix = "\n") { it.path })
+    }
+    commandLine("python3", script.path, listing.path, outputDir.get().asFile.path)
+}
+
 sourceSets.main {
     kotlin.srcDir(upstreamRoot)
     kotlin.srcDir("src/main/kotlin")
     kotlin.srcDir(generateDesktopMigrations)
     kotlin.srcDir(generateDesktopDaoModule)
+    kotlin.srcDir(generateDesktopViewModelModule)
     kotlin.exclude(overlayExclusion)
 }
 
@@ -73,10 +90,19 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(desktopLibs.sqlite.bundled)
     implementation(desktopLibs.kotlinx.coroutines.core)
+    implementation(desktopLibs.kotlinx.coroutines.swing)
+    implementation(desktopLibs.datastore.preferences.core)
     implementation(desktopLibs.dagger)
+    implementation(desktopLibs.hilt.core)
+    implementation(desktopLibs.jetbrains.lifecycle.viewmodel.compose)
+    implementation(desktopLibs.jetbrains.lifecycle.viewmodel.savedstate)
 
     testImplementation(libs.junit)
     testImplementation(desktopLibs.json)
+    testImplementation(compose.desktop.currentOs)
+    testImplementation(desktopLibs.jetbrains.lifecycle.runtime.compose)
+    @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+    testImplementation(compose.desktop.uiTestJUnit4)
 
     ksp(libs.room.compiler)
     ksp(libs.moshi.kotlin)

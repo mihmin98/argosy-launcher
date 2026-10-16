@@ -9,10 +9,12 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = [DesktopDatabaseModule::class])
-interface DesktopComponent {
+@Component(modules = [DesktopDatabaseModule::class, DesktopViewModelComponentModule::class])
+interface DesktopComponent : DesktopEntryPoints {
 
     fun gameDao(): GameDao
+
+    fun viewModelComponentFactory(): DesktopViewModelComponent.Factory
 
     @Component.Factory
     interface Factory {

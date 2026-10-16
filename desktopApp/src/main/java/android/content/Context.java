@@ -8,5 +8,9 @@ import java.io.File;
  */
 public abstract class Context {
 
+    public abstract Context getApplicationContext();
+
     public abstract File getFilesDir();
+
+    public abstract <T> T getSystemService(Class<T> serviceClass);
 }
